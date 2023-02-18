@@ -21,7 +21,7 @@ router.post('/user/edit-avatar',userController.editAvatar)
 router.post('/user/edit-login',userController.editLogin)
 router.post('/user/friends', friendsController.getFriends)
 router.post('/user/send-request', friendsController.sendRequest)
-router.post()
+router.post('/user/requests', friendsController.getRequests)
 
 
 module.exports = router

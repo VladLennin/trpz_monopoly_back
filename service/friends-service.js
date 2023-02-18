@@ -1,28 +1,38 @@
 const UserModel = require('../models/user-model');
 const RequestFriendModel = require('../models/friend-request-model')
 const ApiError = require('../exceptions/api-error')
+const UserDto = require('../dtos/user-dto')
+
 class FriendsService {
 
-    async getFriends(mail) {
-        const friends = await UserModel.findOne({mail}).populate()
-        return friends
+    async getFriends(email) {
+        const user = await UserModel.findOne({email})
+        // const userDto = new UserDto(user)
+        return user
     }
 
-    async sendRequest(email, to) {
-        const sender = await UserModel.findOne({email})
-        const recipient = await UserModel.findOne({to})
+    async getRequests(email) {
+        const user = await UserModel.findOne({email})
+        const requests = await RequestFriendModel.find({to: user})
+        return requests
+    }
 
-        if(!sender){
+
+    async sendRequest(from, to) {
+        const sender = await UserModel.findOne({email: from})
+        const recipient = await UserModel.findOne({email: to})
+        console.log(1 + sender)
+        console.log(2 + recipient)
+
+        if (!sender) {
             throw ApiError.BadRequest("Bad sender")
         }
-        if(!recipient){
+        if (!recipient) {
             throw ApiError.BadRequest("Bad recipient")
         }
 
-        const request = await RequestFriendModel.create({sender})
-        recipient.friendRequests.push(request)
-        recipient.save()
-        sender.save()
+        const request = await RequestFriendModel.create({from: sender, to: recipient})
+        // request.save()
     }
 
 

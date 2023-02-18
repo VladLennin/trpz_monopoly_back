@@ -7,8 +7,7 @@ const UserSchema = new Schema({
     isActivated: {type: Boolean, default: false},
     activationLink: {type: String},
     avatar:{type:Number, default: 0},
-    friends: {type: Schema.Types.ObjectId, ref: 'User'},
-    friendRequests: {type: Schema.Types.ObjectId, ref:'FriendRequest'}
+    friends: [{type: Schema.Types.ObjectId, ref: 'User'}],
 })
 
 module.exports = model('User', UserSchema);

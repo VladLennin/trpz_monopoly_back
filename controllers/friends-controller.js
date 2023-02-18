@@ -1,6 +1,7 @@
 const friendService = require("../service/friends-service");
 
 class FriendsController {
+
     async getFriends(req, res, next) {
         try {
             const {email} = req.body;
@@ -11,11 +12,21 @@ class FriendsController {
         }
     }
 
+    async getRequests(req, res, next){
+        try{
+            const {email} = req.body;
+            const requests = await friendService.getRequests(email)
+            return res.json(requests)
+        }catch(e){
+            next(e)
+        }
+    }
+
 
     async sendRequest(req, res, next){
         try{
-            const {email, to} = req.body;
-            await friendService.sendRequest(email, to)
+            const {from, to} = req.body;
+            await friendService.sendRequest(from, to)
         }catch(e){
             next(e)
         }

@@ -88,7 +88,7 @@ FriendRequest.init({
 )
 
 // FriendRequest.hasOne(sequelize.models.User)
-
+//some change for test git((
 
 sequelize.sync()
 

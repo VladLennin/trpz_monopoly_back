@@ -1,4 +1,4 @@
-const UserModel = require('../models/user-model');
+const {User} = require('./../db/db')
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 const mailService = require('./mail-service');
@@ -9,21 +9,24 @@ const ApiError = require('../exceptions/api-error');
 
 class UserService {
     async registration(email, login, password) {
-        let candidate = await UserModel.findOne({email})
+        let candidate = await User.findOne({where: {email: email}})
         if (candidate) {
             throw ApiError.BadRequest(`User with email ${email} already exist`)
         }
-        candidate = await UserModel.findOne({login})
+        candidate = await User.findOne({where: {login: login}})
         if (candidate) {
             throw ApiError.BadRequest(`User with login ${login} already exist`)
         }
+
         const hashPassword = await bcrypt.hash(password, 3);
         const activationLink = uuid.v4(); // v34fa-asfasf-142saf-sa-asf
 
-        const user = await UserModel.create({email, login, password: hashPassword, activationLink})
+        const user = await User.create({email, login, password: hashPassword, activationLink})
+        console.log("User - " + user.id + " id " + user.email)
         await mailService.sendActivationMail(email, `${process.env.API_URL}/api/activate/${activationLink}`);
 
         const userDto = new UserDto(user); // id, email, isActivated
+
         const tokens = tokenService.generateTokens({...userDto});
         await tokenService.saveToken(userDto.id, tokens.refreshToken);
 
@@ -31,7 +34,7 @@ class UserService {
     }
 
     async activate(activationLink) {
-        const user = await UserModel.findOne({activationLink})
+        const user = await User.findOne({where: {activationLink: activationLink}})
         if (!user) {
             throw ApiError.BadRequest('Incorrectly activation link')
         }
@@ -40,7 +43,7 @@ class UserService {
     }
 
     async login(email, password) {
-        const user = await UserModel.findOne({email})
+        const user = await User.findOne({where: {email: email}})
         if (!user) {
             throw ApiError.BadRequest('User with this email not found')
         }
@@ -56,7 +59,7 @@ class UserService {
     }
 
     async editAvatar(email, avatar) {
-        const user = await UserModel.findOne({email})
+        const user = await User.findOne({where: {email: email}})
         if (!user) {
             throw ApiError.BadRequest('Incorrectly email')
         }
@@ -66,11 +69,11 @@ class UserService {
     }
 
     async editLogin(email, login) {
-        const user = await UserModel.findOne({email})
+        const user = await User.findOne({where: {email: email}})
         if (!user) {
             throw ApiError.BadRequest('Incorrectly email')
         }
-        const candidate = await UserModel.findOne({login})
+        const candidate = await User.findOne({where: {login: login}})
         if (candidate) {
             throw ApiError.BadRequest('User with this login already exist!')
         }
@@ -94,7 +97,7 @@ class UserService {
         if (!userData || !tokenFromDb) {
             throw ApiError.UnauthorizedError();
         }
-        const user = await UserModel.findById(userData.id);
+        const user = await User.findOne({where: {id: userData.id}});
         const userDto = new UserDto(user);
         const tokens = tokenService.generateTokens({...userDto});
 
@@ -103,7 +106,7 @@ class UserService {
     }
 
     async getAllUsers() {
-        const users = await UserModel.find();
+        const users = await User.findAll()
         return users;
     }
 }
